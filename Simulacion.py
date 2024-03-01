@@ -14,8 +14,11 @@ MEMORIA_RAM = 100
 VELOCIDAD_CPU = 3  # Instrucciones por unidad de tiempo
 NUM_CPUS = 1
 
-# Contenedores para almacenar los tiempos de ejecución de los procesos
+# Lista para almacenar los tiempos de ejecución de cada proceso
 tiempos_ejecucion = []
+
+# Lista para almacenar los tiempos de ejecución promedio
+promedios_tiempos_ejecucion = []
 
 class Proceso:
     def __init__(self, env, nombre, memoria, instrucciones):
@@ -41,18 +44,14 @@ class Proceso:
 
 # Función para simular los procesos
 def simular(env, num_procesos, ram, cpu):
-    yield env.timeout(0)
-    tiempo_inicio = env.now
+    tiempo_inicio = env.now  # Tiempo de inicio de la simulación
     for i in range(num_procesos):
         nombre = f'Proceso-{i+1}'
         memoria_necesaria = random.randint(1, 10)
         instrucciones = random.randint(1, 10)
         proceso = Proceso(env, nombre, memoria_necesaria, instrucciones)
         env.process(proceso.ejecutar(cpu, ram))
-        tiempos_ejecucion.append(env.now - tiempo_inicio)
-
-# Lista para almacenar los tiempos de ejecución promedio
-promedios_tiempos_ejecucion = []
+    yield env.timeout(100) # Se añade este tiempo de espera para asegurar que todos los procesos finalicen
 
 # Simulación para cada cantidad de procesos
 for num_procesos in NUM_PROCESOS:
@@ -67,12 +66,13 @@ for num_procesos in NUM_PROCESOS:
     env.run()
 
     # Calcular el tiempo promedio de ejecución
-    promedio = np.mean(tiempos_ejecucion)
-    promedios_tiempos_ejecucion.append(promedio)
+    tiempo_final = env.now  # Tiempo de finalización de la simulación
+    tiempo_promedio = tiempo_final / num_procesos
+    promedios_tiempos_ejecucion.append(tiempo_promedio)
 
     # Mostrar resultados
     print(f"Simulación finalizada para {num_procesos} procesos.")
-    print(f"Tiempo promedio de ejecución: {promedio}")
+    print(f"Tiempo promedio de ejecución: {tiempo_promedio}")
 
 # Graficar tiempos de ejecución promedio
 plt.figure(figsize=(10, 6))
